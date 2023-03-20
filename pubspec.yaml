@@ -47,6 +47,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  lints: ^2.0.1
     
 flutter_icons: 
   image_path: "icons/crypto.png" 

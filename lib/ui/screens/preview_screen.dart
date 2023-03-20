@@ -36,22 +36,18 @@ class _PreviewScreenState extends State<PreviewScreen> {
   bool _isTimerRunning = false;
   int _requestCount = 0;
 
-  // @override
-  // void dispose() {
-  //   mytimer!.cancel();
-  //   print("timer canceled");
-  //   _stopSwapping();
-  //   _disposeControllers();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    _stopTimer();
+    _disposeControllers();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        // _clearControllers();
         // _stopTimer();
-        // _stopSwapping();
         return true;
       },
       child: Scaffold(
@@ -146,29 +142,7 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 BlocBuilder<CryptoPreviewBloc, CryptoPreviewState>(
                   builder: (context, state) {
                     if (state is OnCryptoPreviewSuccess) {
-                      return Flexible(
-                        child: Container(
-                          height: 300.h,
-                          padding: EdgeInsets.only(
-                            right: 10.w,
-                            left: 10.w,
-                            top: 12.w,
-                          ),
-                          decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8.r)),
-                          child: CustomLineChartWidget(
-                            spots: state.spots,
-                            isPositive: !widget.model.first
-                                .priceChangePercentage24h!.isNegative,
-                            maxY: widget.model.first.high24h?.toDouble() ?? 0,
-                            minY: widget.model.first.low24h?.toDouble() ?? 0,
-                            fiatCurrCode:
-                                _initialDropValue ?? vsCurrencyList.first,
-                            dates: state.dates,
-                          ),
-                        ),
-                      );
+                      return _lineGraph(state);
                     }
                     if (state is OnCryptoPreviewError) {
                       return OnErrorWidget(
@@ -208,6 +182,29 @@ class _PreviewScreenState extends State<PreviewScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Flexible _lineGraph(OnCryptoPreviewSuccess state) {
+    return Flexible(
+      child: Container(
+        height: 300.h,
+        padding: EdgeInsets.only(
+          right: 10.w,
+          left: 10.w,
+          top: 12.w,
+        ),
+        decoration: BoxDecoration(
+            color: Colors.black, borderRadius: BorderRadius.circular(8.r)),
+        child: CustomLineChartWidget(
+          spots: state.spots,
+          isPositive: !widget.model.first.priceChangePercentage24h!.isNegative,
+          maxY: widget.model.first.high24h?.toDouble() ?? 0,
+          minY: widget.model.first.low24h?.toDouble() ?? 0,
+          fiatCurrCode: _initialDropValue ?? vsCurrencyList.first,
+          dates: state.dates,
         ),
       ),
     );
@@ -270,29 +267,20 @@ class _PreviewScreenState extends State<PreviewScreen> {
               );
             }
             if (state is OnCryptoError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(state.message,
-                        style: const TextStyle(color: Colors.white)),
-                    ElevatedButton(
-                        onPressed: () {
-                          context.read<CryptoBloc>().add(OnFetch(
-                                currencyCode:
-                                    _initialDropValue ?? vsCurrencyList.first,
-                              ));
-                        },
-                        child: const Text("Retry"))
-                  ],
-                ),
+              return OnErrorWidget(
+                onPressed: () {
+                  context.read<CryptoBloc>().add(OnFetch(
+                        currencyCode: _initialDropValue ?? vsCurrencyList.first,
+                      ));
+                },
+                message: state.message,
               );
             }
             if (state is OnCryptoProgress) {
               return const Center(child: CircularProgressIndicator.adaptive());
             }
 
-            return const Center(child: Text("There is no data yet"));
+            return const SizedBox.shrink();
           },
         ),
       ),
@@ -368,7 +356,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
                         textAlign: TextAlign.right,
                         keyboardType: TextInputType.number,
                         onChanged: (value) {
-                          _requestCount = _requestCount + 1;
                           _swapCryptos(controller.text);
                         },
                         decoration: const InputDecoration.collapsed(
@@ -410,6 +397,8 @@ class _PreviewScreenState extends State<PreviewScreen> {
                 );
               }
               if (state is OnSwapError) {
+                _stopTimer();
+                _stopSwapping();
                 return Center(
                   child: isPrimary
                       ? OnErrorWidget(
