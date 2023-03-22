@@ -1,5 +1,6 @@
 import 'package:cryptonic/core/state_management/crypto_list_bloc/crypto_bloc.dart';
 import 'package:cryptonic/core/state_management/crypto_preview_bloc/crypto_preview_bloc.dart';
+import 'package:cryptonic/core/state_management/crypto_selected_bloc/crypto_selected_bloc.dart';
 import 'package:cryptonic/core/state_management/crypto_swap_bloc/crypto_swap_data_bloc.dart';
 import 'package:cryptonic/ui/screens/tokens_list_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => CryptoPreviewBloc(),
+        ),
+        BlocProvider(
+          create: (context) => CryptoSelectedBloc(),
         ),
         BlocProvider(
           create: (context) => CryptoSwapDataBloc(),

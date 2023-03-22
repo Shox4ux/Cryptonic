@@ -1,5 +1,7 @@
+import 'package:cryptonic/core/domain/crypto_model.dart';
 import 'package:cryptonic/core/state_management/crypto_list_bloc/crypto_bloc.dart';
 import 'package:cryptonic/core/state_management/crypto_preview_bloc/crypto_preview_bloc.dart';
+import 'package:cryptonic/core/state_management/crypto_selected_bloc/crypto_selected_bloc.dart';
 import 'package:cryptonic/ui/res/constants/app_colors.dart';
 import 'package:cryptonic/ui/res/constants/app_text_styles.dart';
 import 'package:cryptonic/ui/res/enums/preview_interval_days_enum.dart';
@@ -54,6 +56,11 @@ class TokensListScreen extends StatelessWidget {
                       fontSize: 18.sp,
                       fontWeight: FontWeight.normal,
                     ),
+                    onChanged: (value) {
+                      context
+                          .read<CryptoBloc>()
+                          .add(OnSearchCryptoList(query: value));
+                    },
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                     ),
@@ -82,7 +89,12 @@ class TokensListScreen extends StatelessWidget {
                                         onTap: () {
                                           context
                                               .read<CryptoBloc>()
-                                              .selectCryptoToPreview(index);
+                                              .selectCryptoToPreview(
+                                                state.cryptoList[index],
+                                              );
+
+                                          // context.read<CryptoBloc>().testFunc(
+                                          //     state.cryptoList[index]);
                                         },
                                         child: CryptoListItemWidget(
                                           cryptoModel: state.cryptoList[index],
@@ -103,13 +115,13 @@ class TokensListScreen extends StatelessWidget {
                                       fixedSize: Size(double.maxFinite, 60.h)),
                                   onPressed: state.isReadyToWatch
                                       ? () {
-                                          Navigator.pushNamed(
-                                            context,
-                                            RouteNames.preview,
-                                            arguments: state.selectedCryptos,
-                                          );
-
                                           _requestForPreview(state, context);
+                                          //============
+                                          _submitSelectedList(
+                                              state.selectedCryptos, context);
+                                          //================
+                                          Navigator.pushNamed(
+                                              context, RouteNames.preview);
                                         }
                                       : null,
                                   child: Text(
@@ -160,6 +172,15 @@ class TokensListScreen extends StatelessWidget {
     );
   }
 
+  void _submitSelectedList(
+    List<CryptoModel> selectedCryptos,
+    BuildContext context,
+  ) {
+    context
+        .read<CryptoSelectedBloc>()
+        .add(OnSubmitSelectedCryptosList(submittedList: selectedCryptos));
+  }
+
   void _requestForPreview(OnCryptoSuccess state, BuildContext context) {
     context.read<CryptoPreviewBloc>().add(
           OnPreview(
@@ -167,7 +188,6 @@ class TokensListScreen extends StatelessWidget {
             currencyCode: "usd",
             interval: PreviewIntervalType.hourly.interval,
             days: PreviewIntervalDays.day.interval,
-            model: state.selectedCryptos.first,
           ),
         );
   }

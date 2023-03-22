@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cryptonic/core/domain/crypto_model.dart';
 import 'package:cryptonic/core/repository/crypto_repository.dart';
 import 'package:cryptonic/core/state_management/helper/models/crypto_list_model.dart';
@@ -13,15 +11,46 @@ part 'crypto_state.dart';
 
 class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
   final _repo = CryptoRepository();
-
   List<CryptoModel> selectedCryptos = [];
   bool isReadyToWatch = false;
+
   List<CryptoListModel> cryptoList = [];
+  List<CryptoListModel> searchCryptoList = [];
 
   CryptoBloc() : super(CryptoInitial()) {
     on<OnFetch>((event, emit) => _onFetch(event, emit));
     on<OnChangeSelectedCrypto>(
         (event, emit) => _onChangeSelectedCrypto(event, emit));
+
+    on<OnSearchCryptoList>((event, emit) => searchCrypto(event.query, emit));
+  }
+
+  void searchCrypto(String query, Emitter<CryptoState> emit) {
+    searchCryptoList.clear();
+    if (state is OnCryptoSuccess) {
+      final oldState = state as OnCryptoSuccess;
+      if (query.isNotEmpty) {
+        cryptoList.forEach((element) {
+          if (element.model.name!.toLowerCase().contains(query.toLowerCase())) {
+            searchCryptoList.add(element);
+          }
+        });
+
+        final newState = oldState.copyWithSearchedList(
+          searchedList: searchCryptoList,
+        );
+        emit(newState);
+      }
+      if (query.isEmpty) {
+        searchCryptoList.clear();
+        final newState = oldState.copyWithGeneralUpdates(
+          updatedCryptoList: cryptoList,
+          updatedToWatch: isReadyToWatch,
+          updatedSelectedCryptos: selectedCryptos,
+        );
+        emit(newState);
+      }
+    }
   }
 
   void _onChangeSelectedCrypto(
@@ -33,7 +62,6 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         selectedCryptos.insert(indexToInsert, event.selectedCrypto);
       }
     }
-
     _updateCryptoListFromPreview(event, emit);
   }
 
@@ -48,7 +76,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
       final oldState = state as OnCryptoSuccess;
 
       final newState = oldState.copyWithGeneralUpdates(
-        updatedCryptoList: cryptoList,
+        updatedCryptoList: searchCryptoList,
         updatedToWatch: isReadyToWatch,
         updatedSelectedCryptos: selectedCryptos,
       );
@@ -109,13 +137,11 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
     }
   }
 
-  selectCryptoToPreview(int selectedIndex) async {
-    final selectedElement = cryptoList.elementAt(selectedIndex).model;
-
+  selectCryptoToPreview(CryptoListModel listModel) async {
     if (selectedCryptos.length == 2) {
       int? indexToRemove;
       for (int i = 0; selectedCryptos.length > i; i++) {
-        if (selectedCryptos[i].id == selectedElement.id) {
+        if (selectedCryptos[i].id == listModel.model.id) {
           indexToRemove = i;
         }
       }
@@ -125,25 +151,28 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         if (selectedCryptos.length < 2) {
           isReadyToWatch = false;
         }
-        _updateCryptoList(selectedIndex, false);
+        _updateCryptoList(listModel, false);
         return;
       } else {
         return;
       }
     }
+
+    //----------------------------------
     if (selectedCryptos.isEmpty) {
-      selectedCryptos.add(selectedElement);
-      _updateCryptoList(selectedIndex, true);
+      selectedCryptos.add(listModel.model);
+      _updateCryptoList(listModel, true);
       return;
     }
+    //--------------------------------------------
     if (selectedCryptos.isNotEmpty) {
       int? indexToRemove;
       int? indexToAdd;
       for (int i = 0; selectedCryptos.length > i; i++) {
-        if (selectedCryptos[i].id == selectedElement.id) {
+        if (selectedCryptos[i].id == listModel.model.id) {
           indexToRemove = i;
         }
-        if (selectedCryptos[i].id != selectedElement.id) {
+        if (selectedCryptos[i].id != listModel.model.id) {
           indexToAdd = i;
         }
       }
@@ -152,29 +181,26 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         if (selectedCryptos.length < 2) {
           isReadyToWatch = false;
         }
-        _updateCryptoList(selectedIndex, false);
+        _updateCryptoList(listModel, false);
         return;
       }
       if (indexToAdd != null) {
-        final cryptoToAdd = cryptoList.elementAt(selectedIndex);
-        selectedCryptos.add(cryptoToAdd.model);
+        selectedCryptos.add(listModel.model);
         if (selectedCryptos.length == 2) {
           isReadyToWatch = true;
         }
-        _updateCryptoList(selectedIndex, true);
+        _updateCryptoList(listModel, true);
         return;
       }
     }
   }
 
-  void _updateCryptoList(int selectedIndex, bool shouldInsert) {
-    final selectedElement = cryptoList.elementAt(selectedIndex);
-
-    final elementToUpdate =
-        CryptoListModel(isSelected: shouldInsert, model: selectedElement.model);
-    cryptoList.removeAt(selectedIndex);
-    cryptoList.insert(selectedIndex, elementToUpdate);
-
+  void _updateCryptoList(CryptoListModel listModel, bool isSelected) {
+    final replaceWith =
+        CryptoListModel(isSelected: isSelected, model: listModel.model);
+    cryptoList.contains(listModel)
+        ? cryptoList[cryptoList.indexWhere((v) => v == listModel)] = replaceWith
+        : cryptoList;
     if (state is OnCryptoSuccess) {
       final oldState = state as OnCryptoSuccess;
       final newState = oldState.copyWithGeneralUpdates(

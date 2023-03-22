@@ -8,13 +8,11 @@ class OnPreview extends CryptoPreviewEvent {
   final String currencyCode;
   final String interval;
   final String days;
-  final CryptoModel model;
 
   OnPreview({
     required this.coinId,
     required this.currencyCode,
     required this.interval,
     required this.days,
-    required this.model,
   });
 }

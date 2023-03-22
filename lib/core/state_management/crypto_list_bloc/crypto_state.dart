@@ -35,6 +35,15 @@ class OnCryptoSuccess extends CryptoState {
       isReadyToWatch: isReadyToWatch,
     );
   }
+
+  OnCryptoSuccess copyWithSearchedList(
+      {required List<CryptoListModel> searchedList}) {
+    return OnCryptoSuccess(
+      cryptoList: searchedList,
+      selectedCryptos: selectedCryptos,
+      isReadyToWatch: isReadyToWatch,
+    );
+  }
 }
 
 class OnCryptoProgress extends CryptoState {}

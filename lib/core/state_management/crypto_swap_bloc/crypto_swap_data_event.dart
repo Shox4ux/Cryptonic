@@ -17,4 +17,6 @@ class OnStartSwap extends CryptoSwapDataEvent {
   });
 }
 
+class OnReverseSwap extends CryptoSwapDataEvent {}
+
 class OnStopSwap extends CryptoSwapDataEvent {}
