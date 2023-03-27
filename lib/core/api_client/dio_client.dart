@@ -1,4 +1,4 @@
-import 'package:cryptonic/ui/res/constants/api_urls.dart';
+import 'package:cryptonic/src/utils/constants/api_urls.dart';
 import 'package:dio/dio.dart';
 
 enum BaseUrlType {
