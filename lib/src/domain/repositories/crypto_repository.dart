@@ -1,4 +1,4 @@
-import 'package:cryptonic/core/api_client/dio_client.dart';
+import 'package:cryptonic/src/data/remote/api_client/dio_client.dart';
 import 'package:cryptonic/src/domain/models/request/grahp_data_request.dart';
 import 'package:cryptonic/src/domain/repositories/base_repositories/base_crypto_repo.dart';
 import 'package:cryptonic/src/utils/constants/api_urls.dart';
