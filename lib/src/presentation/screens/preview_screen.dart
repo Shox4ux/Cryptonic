@@ -36,7 +36,6 @@ class _PreviewScreenState extends State<PreviewScreen> {
 
   String? _initialDropValue;
   bool _isReversed = false;
-  bool _isTimerRunning = false;
 
   @override
   Widget build(BuildContext context) {

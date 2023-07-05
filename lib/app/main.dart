@@ -1,12 +1,12 @@
+import 'package:cryptonic/src/presentation/blocs/crypto_list_bloc/crypto_bloc.dart';
+import 'package:cryptonic/src/presentation/blocs/crypto_preview_bloc/crypto_preview_bloc.dart';
+import 'package:cryptonic/src/presentation/blocs/crypto_selected_bloc/crypto_selected_bloc.dart';
+import 'package:cryptonic/src/presentation/blocs/crypto_swap_bloc/crypto_swap_data_bloc.dart';
 import 'package:cryptonic/src/presentation/screens/crypto_list_screen.dart';
 import 'package:cryptonic/src/utils/resources/router/navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'presentation/blocs/crypto_list_bloc/crypto_bloc.dart';
-import 'presentation/blocs/crypto_preview_bloc/crypto_preview_bloc.dart';
-import 'presentation/blocs/crypto_selected_bloc/crypto_selected_bloc.dart';
-import 'presentation/blocs/crypto_swap_bloc/crypto_swap_data_bloc.dart';
 
 void main() async {
   runApp(const MyApp());

@@ -131,7 +131,7 @@ class CryptoBloc extends Bloc<CryptoEvent, CryptoState> {
         selectedCryptos: selectedCryptos,
         isReadyToWatch: isReadyToWatch,
       ));
-    } on DioError catch (e) {
+    } on DioError {
       emit(OnCryptoError(message: "Something went wrong"));
     }
   }
